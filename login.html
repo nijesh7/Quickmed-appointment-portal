@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="QuickMed – Sign in to manage your medical appointments instantly." />
+  <title>QuickMed · Sign In</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    /* ─── tokens ─────────────────────────────────────────────── */
+    :root {
+      --teal:      #0d9488;
+      --teal-dk:   #0f766e;
+      --teal-lt:   #ccfbf1;
+      --navy:      #0c1b33;
+      --navy-2:    #132347;
+      --slate:     #64748b;
+      --muted:     #94a3b8;
+      --danger:    #f43f5e;
+      --white:     #ffffff;
+      --off-white: #f8fafc;
+      --border:    rgba(255,255,255,.12);
+      --ease:      cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      background: var(--off-white);
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ─── LEFT PANEL ──────────────────────────────────────────── */
+    .left-panel {
+      flex: 0 0 48%;
+      background: var(--navy);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 52px;
+      overflow: hidden;
+    }
+
+    /* Layered gradient wash */
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 10% 100%, rgba(13,148,136,.55) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 50% at 90% 0%,   rgba(13,148,136,.25) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Decorative ring */
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid rgba(13,148,136,.22);
+      pointer-events: none;
+    }
+    .ring-1 { width: 340px; height: 340px; top: -80px;  right: -80px; }
+    .ring-2 { width: 220px; height: 220px; top: -20px;  right: -20px; }
+    .ring-3 { width: 500px; height: 500px; bottom: -160px; left: -160px; }
+
+    /* Floating dots grid */
+    .dots-grid {
+      position: absolute;
+      bottom: 80px;
+      right: 40px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      opacity: .18;
+    }
+    .dots-grid span {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--teal);
+      display: block;
+    }
+
+    /* Brand */
+    .brand {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 44px; height: 44px;
+      background: var(--teal);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -.3px;
+    }
+    .brand-name em { color: var(--teal); font-style: normal; }
+
+    /* Hero copy */
+    .hero {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border: 1px solid rgba(13,148,136,.45);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--teal-lt);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-tag span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: pulse-dot 2s ease infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.7); }
+    }
+
+    .hero-headline {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(32px, 3.5vw, 46px);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.12;
+      letter-spacing: -.8px;
+      margin-bottom: 18px;
+    }
+
+    .hero-headline .accent {
+      color: var(--teal);
+      position: relative;
+    }
+    .hero-headline .accent::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      bottom: -4px;
+      height: 3px;
+      background: var(--teal);
+      border-radius: 2px;
+      opacity: .45;
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,.58);
+      line-height: 1.7;
+      max-width: 340px;
+      margin-bottom: 42px;
+    }
+
+    /* Feature pills */
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .feat-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .feat-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: rgba(13,148,136,.18);
+      border: 1px solid rgba(13,148,136,.3);
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      color: var(--teal);
+      flex-shrink: 0;
+    }
+
+    .feat-text strong {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .feat-text span {
+      font-size: 12px;
+      color: rgba(255,255,255,.45);
+    }
+
+    /* Testimonial */
+    .testimonial {
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      backdrop-filter: blur(8px);
+    }
+
+    .testimonial blockquote {
+      font-size: 13.5px;
+      color: rgba(255,255,255,.72);
+      line-height: 1.65;
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal) 0%, #14b8a6 100%);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      color: #fff;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .author-info strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .author-info span {
+      font-size: 11.5px;
+      color: rgba(255,255,255,.45);
+    }
+
+    .stars {
+      margin-left: auto;
+      color: #fbbf24;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* ─── RIGHT PANEL ─────────────────────────────────────────── */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      background: var(--off-white);
+      position: relative;
+      overflow-y: auto;
+    }
+
+    /* Subtle pattern bg */
+    .right-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(13,148,136,.06) 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+
+    /* ─── FORM CARD ───────────────────────────────────────────── */
+    .form-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      animation: fadeUp .5s var(--ease) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-card-header {
+      margin-bottom: 32px;
+    }
+
+    .greeting {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .greeting::before {
+      content: '';
+      width: 20px;
+      height: 2px;
+      background: var(--teal);
+      border-radius: 1px;
+    }
+
+    .form-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -.5px;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+
+    .form-sub {
+      font-size: 14px;
+      color: var(--slate);
+    }
+
+    /* ─── INPUTS ──────────────────────────────────────────────── */
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 8px;
+      letter-spacing: .1px;
+    }
+
+    .input-shell {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-shell .icon-l {
+      position: absolute;
+      left: 15px;
+      font-size: 15px;
+      color: var(--muted);
+      pointer-events: none;
+      transition: color .2s;
+    }
+
+    .input-shell input {
+      width: 100%;
+      height: 52px;
+      padding: 0 48px 0 46px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-family: 'Inter', sans-serif;
+      color: var(--navy);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .input-shell input::placeholder { color: #c1ccd9; }
+
+    .input-shell:focus-within .icon-l { color: var(--teal); }
+
+    .input-shell input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 4px rgba(13,148,136,.12);
+    }
+
+    /* Error state */
+    .field.has-error .input-shell input {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 4px rgba(244,63,94,.09);
+    }
+
+    .err-msg {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--danger);
+      font-weight: 500;
+      margin-top: 6px;
+    }
+    .field.has-error .err-msg { display: flex; animation: shake .3s ease; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25%       { transform: translateX(-5px); }
+      75%       { transform: translateX(5px); }
+    }
+
+    /* Password eye toggle */
+    .pw-toggle {
+      position: absolute;
+      right: 14px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 15px;
+      padding: 6px;
+      border-radius: 6px;
+      transition: color .2s;
+    }
+    .pw-toggle:hover { color: var(--teal); }
+
+    /* ─── OPTIONS ROW ─────────────────────────────────────────── */
+    .options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .remember-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember-label input { display: none; }
+
+    .check-box {
+      width: 19px; height: 19px;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      transition: background .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+    .check-box i { font-size: 9px; color: #fff; opacity: 0; transition: opacity .15s; }
+
+    .remember-label input:checked ~ .check-box {
+      background: var(--teal);
+      border-color: var(--teal);
+    }
+    .remember-label input:checked ~ .check-box i { opacity: 1; }
+
+    .remember-label .lbl-text { font-size: 13px; color: var(--slate); }
+
+    .forgot-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      text-decoration: none;
+      transition: color .2s, text-decoration .2s;
+    }
+    .forgot-link:hover { color: var(--teal-dk); text-decoration: underline; }
+
+    /* ─── SUBMIT BUTTON ───────────────────────────────────────── */
+    .btn-submit {
+      width: 100%;
+      height: 54px;
+      border: none;
+      border-radius: 13px;
+      background: var(--navy);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+      box-shadow: 0 4px 20px rgba(12,27,51,.25);
+    }
+
+    .btn-submit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(13,148,136,.5) 0%, transparent 55%);
+      opacity: 0;
+      transition: opacity .25s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(12,27,51,.32);
+    }
+    .btn-submit:hover::after { opacity: 1; }
+    .btn-submit:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(12,27,51,.2); }
+    .btn-submit:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+
+    .btn-arrow {
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,.12);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      transition: transform .2s;
+    }
+    .btn-submit:hover .btn-arrow { transform: translateX(3px); }
+
+    /* Spinner */
+    .spin-ring {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-submit.loading .spin-ring { display: block; }
+    .btn-submit.loading .btn-label,
+    .btn-submit.loading .btn-arrow { display: none; }
+
+    /* ─── ALERT ───────────────────────────────────────────────── */
+    .alert {
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 13px 15px;
+      border-radius: 11px;
+      font-size: 13.5px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      animation: fadeUp .25s ease;
+    }
+    .alert.show { display: flex; }
+    .alert.is-error   { background: #fff1f3; color: #be123c; border: 1px solid #fecdd3; }
+    .alert.is-success { background: #f0fdf9; color: var(--teal-dk); border: 1px solid #99f6e4; }
+
+    /* ─── DIVIDER ─────────────────────────────────────────────── */
+    .divide {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 26px 0;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .3px;
+    }
+    .divide::before, .divide::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    /* ─── TRUST BADGES ────────────────────────────────────────── */
+    .trust-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 4px;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+    .trust-item i { color: var(--teal); font-size: 12px; }
+
+    /* ─── BOTTOM NOTE ─────────────────────────────────────────── */
+    .signup-note {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 13.5px;
+      color: var(--slate);
+    }
+    .signup-note a {
+      color: var(--teal);
+      font-weight: 700;
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .signup-note a:hover { color: var(--teal-dk); text-decoration: underline; }
+
+    /* ─── MOBILE ──────────────────────────────────────────────── */
+    @media (max-width: 820px) {
+      body { flex-direction: column; overflow: auto; }
+
+      .left-panel {
+        flex: none;
+        padding: 32px 28px 36px;
+      }
+
+      .hero-headline { font-size: 28px; }
+      .hero-sub, .features, .testimonial { display: none; }
+
+      .right-panel { padding: 36px 20px 48px; }
+    }
+
+    @media (max-width: 480px) {
+      .left-panel { padding: 28px 20px; }
+      .form-title { font-size: 26px; }
+      .trust-row { gap: 12px; flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════ LEFT BRAND PANEL ══════════════════ -->
+  <aside class="left-panel" aria-label="Brand information">
+    <!-- Decorative rings -->
+    <div class="ring ring-1" aria-hidden="true"></div>
+    <div class="ring ring-2" aria-hidden="true"></div>
+    <div class="ring ring-3" aria-hidden="true"></div>
+
+    <!-- Dots grid -->
+    <div class="dots-grid" aria-hidden="true">
+      <!-- 36 dots (6×6) -->
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- Brand mark -->
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">
+        <i class="fa-solid fa-stethoscope"></i>
+      </div>
+      <span class="brand-name">Quick<em>Med</em></span>
+    </div>
+
+    <!-- Hero text -->
+    <div class="hero">
+      <div class="hero-tag">
+        <span aria-hidden="true"></span>
+        Healthcare, reimagined
+      </div>
+
+      <h1 class="hero-headline">
+        Your health,<br/>
+        on your<br/>
+        <span class="accent">schedule.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Book specialist appointments in minutes. Real-time availability, instant confirmations — no phone calls, no waiting.
+      </p>
+
+      <div class="features">
+        <div class="feat-item">
+          <div class="feat-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="feat-text">
+            <strong>Instant Booking</strong>
+            <span>Schedule in under 60 seconds</span>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon" aria-hidden="true"><i class="fa-solid fa-bell"></i></div>
+          <div class="feat-text">
+            <strong>Smart Reminders</strong>
+            <span>Never miss an appointment</span>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon" aria-hidden="true"><i class="fa-solid fa-file-medical"></i></div>
+          <div class="feat-text">
+            <strong>Digital Records</strong>
+            <span>Your history, always accessible</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonial -->
+    <div class="testimonial">
+      <blockquote>"QuickMed saved me hours of back-and-forth phone calls. Booked my cardiologist in literally two minutes."</blockquote>
+      <div class="testimonial-author">
+        <div class="avatar" aria-hidden="true">SK</div>
+        <div class="author-info">
+          <strong>Sarah K.</strong>
+          <span>Verified patient · Mumbai</span>
+        </div>
+        <div class="stars" aria-label="5 out of 5 stars">★★★★★</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════════════ RIGHT FORM PANEL ══════════════════ -->
+  <main class="right-panel" aria-label="Login form">
+    <div class="form-card">
+
+      <!-- Header -->
+      <div class="form-card-header">
+        <div class="greeting">Sign in</div>
+        <h2 class="form-title">Welcome back</h2>
+        <p class="form-sub">Enter your credentials to access your account</p>
+      </div>
+
+      <!-- Global alert -->
+      <div class="alert" id="alertBox" role="alert" aria-live="polite">
+        <i id="alertIcon" class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+        <span id="alertText"></span>
+      </div>
+
+      <!-- Form -->
+      <form id="loginForm" novalidate aria-label="Sign in form">
+
+        <!-- Email / Username -->
+        <div class="field" id="emailField">
+          <label for="emailInput">Email or Username</label>
+          <div class="input-shell">
+            <i class="fa-solid fa-at icon-l" aria-hidden="true"></i>
+            <input
+              type="text"
+              id="emailInput"
+              name="email"
+              placeholder="you@example.com"
+              autocomplete="username"
+              aria-required="true"
+              aria-describedby="emailErr"
+            />
+          </div>
+          <div class="err-msg" id="emailErr" role="alert">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span id="emailErrTxt">Please enter a valid email.</span>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="field" id="passwordField">
+          <label for="passwordInput">Password</label>
+          <div class="input-shell">
+            <i class="fa-solid fa-lock icon-l" aria-hidden="true"></i>
+            <input
+              type="password"
+              id="passwordInput"
+              name="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              aria-required="true"
+              aria-describedby="passwordErr"
+            />
+            <button
+              type="button"
+              class="pw-toggle"
+              id="pwToggle"
+              aria-label="Show password"
+              title="Toggle password visibility"
+            >
+              <i class="fa-solid fa-eye" id="pwIcon"></i>
+            </button>
+          </div>
+          <div class="err-msg" id="passwordErr" role="alert">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span id="passwordErrTxt">Password is required.</span>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="options-row">
+          <label class="remember-label" for="rememberMe">
+            <input type="checkbox" id="rememberMe" name="rememberMe" />
+            <div class="check-box" aria-hidden="true">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <span class="lbl-text">Remember me</span>
+          </label>
+          <a href="#" class="forgot-link" id="forgotLink" aria-label="Reset your password">Forgot password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="loginBtn" aria-label="Sign in to your account">
+          <div class="spin-ring" id="spinner" aria-hidden="true"></div>
+          <span class="btn-label">Sign In</span>
+          <div class="btn-arrow" aria-hidden="true">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </button>
+
+      </form>
+
+      <!-- Divider -->
+      <div class="divide" aria-hidden="true">or</div>
+
+      <!-- Sign up note -->
+      <div class="signup-note">
+        New to QuickMed? <a href="#" id="signupLink" aria-label="Create a new account">Create an account</a>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="trust-row" aria-label="Security assurances">
+        <div class="trust-item"><i class="fa-solid fa-shield-halved"></i> SSL Secure</div>
+        <div class="trust-item"><i class="fa-solid fa-lock"></i> Encrypted</div>
+        <div class="trust-item"><i class="fa-solid fa-circle-check"></i> HIPAA Safe</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+  <script>
+    /* ── helpers ───────────────────────────────────── */
+    const $ = id => document.getElementById(id);
+
+    function showAlert(msg, type = 'error') {
+      const box = $('alertBox');
+      $('alertText').textContent = msg;
+      $('alertIcon').className = type === 'error'
+        ? 'fa-solid fa-circle-exclamation'
+        : 'fa-solid fa-circle-check';
+      box.className = `alert show ${type === 'error' ? 'is-error' : 'is-success'}`;
+    }
+
+    function hideAlert() { $('alertBox').className = 'alert'; }
+
+    function fieldError(fieldId, errTxtId, msg) {
+      $(fieldId).classList.add('has-error');
+      $(errTxtId).textContent = msg;
+    }
+
+    function fieldOk(fieldId) { $(fieldId).classList.remove('has-error'); }
+
+    const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+    /* ── password toggle ───────────────────────────── */
+    $('pwToggle').addEventListener('click', () => {
+      const inp = $('passwordInput');
+      const hidden = inp.type === 'password';
+      inp.type = hidden ? 'text' : 'password';
+      $('pwIcon').className = hidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+      $('pwToggle').setAttribute('aria-label', hidden ? 'Hide password' : 'Show password');
+    });
+
+    /* ── live validation clear ─────────────────────── */
+    $('emailInput').addEventListener('input', () => {
+      if ($('emailInput').value.trim()) fieldOk('emailField');
+    });
+    $('emailInput').addEventListener('blur', () => {
+      const v = $('emailInput').value.trim();
+      if (!v) {
+        fieldError('emailField', 'emailErrTxt', 'Email or username is required.');
+      } else if (v.includes('@') && !isEmail(v)) {
+        fieldError('emailField', 'emailErrTxt', 'Please enter a valid email address.');
+      } else {
+        fieldOk('emailField');
+      }
+    });
+    $('passwordInput').addEventListener('input', () => {
+      if ($('passwordInput').value) fieldOk('passwordField');
+    });
+
+    /* ── form submit ───────────────────────────────── */
+    const loginBtn = $('loginBtn');
+
+    $('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      hideAlert();
+
+      const email = $('emailInput').value.trim();
+      const pw    = $('passwordInput').value;
+      let valid   = true;
+
+      if (!email) {
+        fieldError('emailField', 'emailErrTxt', 'Email or username is required.');
+        valid = false;
+      } else if (email.includes('@') && !isEmail(email)) {
+        fieldError('emailField', 'emailErrTxt', 'Please enter a valid email address.');
+        valid = false;
+      } else {
+        fieldOk('emailField');
+      }
+
+      if (!pw) {
+        fieldError('passwordField', 'passwordErrTxt', 'Password is required.');
+        valid = false;
+      } else if (pw.length < 6) {
+        fieldError('passwordField', 'passwordErrTxt', 'Password must be at least 6 characters.');
+        valid = false;
+      } else {
+        fieldOk('passwordField');
+      }
+
+      if (!valid) return;
+
+      /* loading state */
+      loginBtn.classList.add('loading');
+      loginBtn.disabled = true;
+
+      await new Promise(r => setTimeout(r, 1700));
+
+      loginBtn.classList.remove('loading');
+      loginBtn.disabled = false;
+
+      /* demo logic */
+      if (email === 'admin@quickmed.com' && pw === 'admin123') {
+        showAlert('Login successful! Redirecting to dashboard…', 'success');
+        if ($('rememberMe').checked) {
+          localStorage.setItem('qm_remember', email);
+        } else {
+          localStorage.removeItem('qm_remember');
+        }
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+      } else {
+        showAlert('Incorrect email or password. Try admin@quickmed.com / admin123', 'error');
+        $('passwordInput').value = '';
+        $('passwordInput').focus();
+      }
+    });
+
+    /* ── forgot password ───────────────────────────── */
+    $('forgotLink').addEventListener('click', e => {
+      e.preventDefault();
+      const email = $('emailInput').value.trim();
+      showAlert(
+        email
+          ? `A reset link will be sent to: ${email}`
+          : 'Enter your email above, then click "Forgot password?"',
+        'success'
+      );
+    });
+
+    /* ── sign up ───────────────────────────────────── */
+    $('signupLink').addEventListener('click', e => {
+      e.preventDefault();
+      showAlert('Account registration coming soon — stay tuned!', 'success');
+    });
+
+    /* ── restore remember me ───────────────────────── */
+    (function () {
+      const saved = localStorage.getItem('qm_remember');
+      if (saved) {
+        $('emailInput').value = saved;
+        $('rememberMe').checked = true;
+      }
+    })();
+  </script>
+
+</body>
+</html>
