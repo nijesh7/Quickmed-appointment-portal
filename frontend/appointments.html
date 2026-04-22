@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Appointment - Quick Med</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1d6cf1;
+      --primary-dark: #1452c8;
+      --bg: #f8faff;
+      --surface: #ffffff;
+      --text: #0c1b33;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --error: #ef4444;
+      --radius: 12px;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary), #4f8ef7);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    .form-container {
+      padding: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 15px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background-color: #fcfcfc;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(29, 108, 241, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn:active {
+      transform: translateY(2px);
+    }
+
+    .btn:disabled {
+      background: var(--text-light);
+      cursor: not-allowed;
+    }
+
+    .message {
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .message.success {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #34d399;
+      display: block;
+    }
+
+    .message.error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #f87171;
+      display: block;
+    }
+
+    .specialist-badge {
+      display: inline-block;
+      background: #e8f0fe;
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <a href="index.html" class="back-link">← Back to Home</a>
+    
+    <div class="container">
+      <div class="header">
+        <h1>Book an Appointment</h1>
+        <p>Fill out the details below to schedule your visit</p>
+        <div id="specialistDisplay" class="specialist-badge">Select a Specialist</div>
+      </div>
+
+      <div class="form-container">
+        <div id="statusMessage" class="message"></div>
+
+        <form id="appointmentForm">
+          <input type="hidden" id="specialistInput" name="specialist">
+          
+          <div class="form-group">
+            <label for="patientName">Patient Name</label>
+            <input type="text" id="patientName" placeholder="Enter your full name" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age">Age</label>
+              <input type="number" id="age" min="1" max="120" placeholder="e.g. 25" required>
+            </div>
+            <div class="form-group">
+              <label for="gender">Gender</label>
+              <select id="gender" required>
+                <option value="" disabled selected>Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="date">Appointment Date</label>
+              <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+              <label for="time">Time Slot</label>
+              <select id="time" required>
+                <option value="" disabled selected>Select time</option>
+                <option value="09:00 AM">09:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="11:30 AM">11:30 AM</option>
+                <option value="02:00 PM">02:00 PM</option>
+                <option value="04:00 PM">04:00 PM</option>
+                <option value="05:30 PM">05:30 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Problem / Description</label>
+            <textarea id="description" placeholder="Briefly describe your symptoms or reason for the visit" required></textarea>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn">Book Appointment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Get specialist from URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const specialist = urlParams.get('specialist');
+      
+      const specialistDisplay = document.getElementById('specialistDisplay');
+      const specialistInput = document.getElementById('specialistInput');
+      
+      if (specialist) {
+        specialistDisplay.textContent = specialist;
+        specialistInput.value = specialist;
+      } else {
+        specialistDisplay.textContent = 'General Physician';
+        specialistInput.value = 'General Physician';
+      }
+
+      // Set minimum date to today
+      const dateInput = document.getElementById('date');
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.min = today;
+    });
+
+    // 2. Handle form submission
+    document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const statusMsg = document.getElementById('statusMessage');
+      
+      // Basic validation is handled by HTML 'required' attributes, 
+      // but we ensure fields aren't just whitespace
+      const patientName = document.getElementById('patientName').value.trim();
+      const age = document.getElementById('age').value;
+      const gender = document.getElementById('gender').value;
+      const specialist = document.getElementById('specialistInput').value;
+      const date = document.getElementById('date').value;
+      const time = document.getElementById('time').value;
+      const description = document.getElementById('description').value.trim();
+
+      if (!patientName || !description) {
+        statusMsg.textContent = 'Please fill out all required fields properly.';
+        statusMsg.className = 'message error';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Booking...';
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/appointments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            patient_name: patientName,
+            age: age,
+            gender: gender,
+            specialist: specialist,
+            date: date,
+            time: time,
+            description: description
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Show success message
+          statusMsg.textContent = data.message || 'Appointment Booked Successfully';
+          statusMsg.className = 'message success';
+          document.getElementById('appointmentForm').reset();
+          
+          // Keep specialist value after reset
+          document.getElementById('specialistInput').value = specialist;
+        } else {
+          // Show error message from backend
+          statusMsg.textContent = data.message || 'Failed to book appointment.';
+          statusMsg.className = 'message error';
+        }
+      } catch (err) {
+        console.error('Submission error:', err);
+        statusMsg.textContent = 'Network error. Please try again later.';
+        statusMsg.className = 'message error';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Book Appointment';
+        
+        // Scroll to message
+        statusMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  </script>
+</body>
+</html>
