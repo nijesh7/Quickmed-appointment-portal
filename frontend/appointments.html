@@ -3,350 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book Appointment - Quick Med</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Select Specialist - Quick Med</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    /* Reuse base tokens */
     :root {
-      --primary: #1d6cf1;
-      --primary-dark: #1452c8;
-      --bg: #f8faff;
-      --surface: #ffffff;
-      --text: #0c1b33;
-      --text-light: #64748b;
-      --border: #e2e8f0;
-      --success: #10b981;
-      --error: #ef4444;
-      --radius: 12px;
+      --blue:       #1d6cf1;
+      --blue-light: #e8f0fe;
+      --teal:       #0ea5c8;
+      --green:      #10b981;
+      --amber:      #f59e0b;
+      --red:        #ef4444;
+      --ink:        #0c1b33;
+      --ink-3:      #64748b;
+      --line:       #e2e8f0;
+      --white:      #ffffff;
+      --surface:    #f8faff;
+      --radius-lg:  24px;
+      --ease:       cubic-bezier(.4,0,.2,1);
     }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--surface); color: var(--ink); padding: 40px 20px; }
+    a { text-decoration: none; }
+
+    .container { max-width: 1160px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 { font-size: 36px; font-weight: 800; color: var(--ink); margin-bottom: 10px; }
+    .header p { font-size: 16px; color: var(--ink-3); }
+    .back-link { display: inline-block; margin-bottom: 20px; color: var(--blue); font-weight: 600; }
+    .back-link:hover { text-decoration: underline; }
+
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
     
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    .service-card {
+      background: var(--white); border-radius: var(--radius-lg); padding: 32px 28px;
+      border: 1.5px solid var(--line); position: relative; overflow: hidden;
+      transition: transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s;
+      cursor: pointer; display: block;
+    }
+    .service-card::before {
+      content: ''; position: absolute; inset: 0; opacity: 0;
+      transition: opacity .3s var(--ease);
+      border-radius: inherit;
+    }
+    .service-card:hover { transform: translateY(-6px); border-color: transparent; box-shadow: 0 20px 60px rgba(29,108,241,.14); }
+    .service-card:hover::before { opacity: 1; }
     
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      padding: 40px 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+    .s-blue::before   { background: linear-gradient(145deg, rgba(29,108,241,.05) 0%, transparent 70%); }
+    .s-teal::before   { background: linear-gradient(145deg, rgba(14,165,200,.05) 0%, transparent 70%); }
+    .s-green::before  { background: linear-gradient(145deg, rgba(16,185,129,.05) 0%, transparent 70%); }
+    .s-purple::before { background: linear-gradient(145deg, rgba(139,92,246,.05) 0%, transparent 70%); }
+    .s-amber::before  { background: linear-gradient(145deg, rgba(245,158,11,.05) 0%, transparent 70%); }
+    .s-red::before    { background: linear-gradient(145deg, rgba(239,68,68,.05) 0%, transparent 70%); }
 
-    .container {
-      max-width: 600px;
-      width: 100%;
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
+    .service-icon {
+      width: 58px; height: 58px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+      margin-bottom: 20px; position: relative; z-index: 1;
     }
-
-    .header {
-      background: linear-gradient(135deg, var(--primary), #4f8ef7);
-      color: white;
-      padding: 30px;
-      text-align: center;
-    }
-
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .header p {
-      font-size: 15px;
-      opacity: 0.9;
-    }
-
-    .form-container {
-      padding: 30px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 480px) {
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 12px 16px;
-      font-family: inherit;
-      font-size: 15px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      background-color: #fcfcfc;
-      transition: all 0.2s;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      background-color: #fff;
-      box-shadow: 0 0 0 3px rgba(29, 108, 241, 0.1);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    .btn:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn:active {
-      transform: translateY(2px);
-    }
-
-    .btn:disabled {
-      background: var(--text-light);
-      cursor: not-allowed;
-    }
-
-    .message {
-      padding: 14px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 14px;
-      font-weight: 500;
-      display: none;
-    }
-
-    .message.success {
-      background-color: #d1fae5;
-      color: #065f46;
-      border: 1px solid #34d399;
-      display: block;
-    }
-
-    .message.error {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #f87171;
-      display: block;
-    }
-
-    .specialist-badge {
-      display: inline-block;
-      background: #e8f0fe;
-      color: var(--primary);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      margin-top: 10px;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin-bottom: 20px;
-      color: var(--primary);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-    }
+    .si-blue   { background: #e8f0fe; color: var(--blue); }
+    .si-teal   { background: #e0f7fc; color: var(--teal); }
+    .si-green  { background: #d1fae5; color: var(--green); }
+    .si-purple { background: #ede9fe; color: #7c3aed; }
+    .si-amber  { background: #fef3c7; color: #d97706; }
+    .si-red    { background: #fee2e2; color: var(--red); }
     
-    .back-link:hover {
-      text-decoration: underline;
-    }
+    .service-title { font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 10px; position: relative; z-index: 1; }
+    .service-desc { font-size: 14.5px; color: var(--ink-3); line-height: 1.65; position: relative; z-index: 1; }
+    
+    @media (max-width: 900px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .services-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
-  <div>
-    <a href="index.html" class="back-link">← Back to Home</a>
+  <div class="container">
+    <a href="index.html" class="back-link">← Back to Dashboard</a>
     
-    <div class="container">
-      <div class="header">
-        <h1>Book an Appointment</h1>
-        <p>Fill out the details below to schedule your visit</p>
-        <div id="specialistDisplay" class="specialist-badge">Select a Specialist</div>
-      </div>
+    <div class="header">
+      <h1>Select a Specialist</h1>
+      <p>Choose the right specialist for your health needs to book an appointment.</p>
+    </div>
 
-      <div class="form-container">
-        <div id="statusMessage" class="message"></div>
+    <div class="services-grid">
+      <!-- Card 1 -->
+      <a href="appointment.html?specialist=Cardiologist" class="service-card s-teal">
+        <div class="service-icon si-teal"><i class="fa-solid fa-heart-pulse"></i></div>
+        <h3 class="service-title">Cardiologist</h3>
+        <p class="service-desc">Expert heart specialists for diagnosis, monitoring, and treatment of cardiovascular conditions.</p>
+      </a>
 
-        <form id="appointmentForm">
-          <input type="hidden" id="specialistInput" name="specialist">
-          
-          <div class="form-group">
-            <label for="patientName">Patient Name</label>
-            <input type="text" id="patientName" placeholder="Enter your full name" required>
-          </div>
+      <!-- Card 2 -->
+      <a href="appointment.html?specialist=Neurologist" class="service-card s-purple">
+        <div class="service-icon si-purple"><i class="fa-solid fa-brain"></i></div>
+        <h3 class="service-title">Neurologist</h3>
+        <p class="service-desc">World-class neurologists handling headaches, epilepsy, stroke, and cognitive health.</p>
+      </a>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="age">Age</label>
-              <input type="number" id="age" min="1" max="120" placeholder="e.g. 25" required>
-            </div>
-            <div class="form-group">
-              <label for="gender">Gender</label>
-              <select id="gender" required>
-                <option value="" disabled selected>Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
+      <!-- Card 3 -->
+      <a href="appointment.html?specialist=Gynecologist" class="service-card s-red">
+        <div class="service-icon si-red"><i class="fa-solid fa-person-pregnant"></i></div>
+        <h3 class="service-title">Gynecologist</h3>
+        <p class="service-desc">Comprehensive care for women's reproductive health, prenatal care, and related conditions.</p>
+      </a>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="date">Appointment Date</label>
-              <input type="date" id="date" required>
-            </div>
-            <div class="form-group">
-              <label for="time">Time Slot</label>
-              <select id="time" required>
-                <option value="" disabled selected>Select time</option>
-                <option value="09:00 AM">09:00 AM</option>
-                <option value="10:00 AM">10:00 AM</option>
-                <option value="11:30 AM">11:30 AM</option>
-                <option value="02:00 PM">02:00 PM</option>
-                <option value="04:00 PM">04:00 PM</option>
-                <option value="05:30 PM">05:30 PM</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="description">Problem / Description</label>
-            <textarea id="description" placeholder="Briefly describe your symptoms or reason for the visit" required></textarea>
-          </div>
-
-          <button type="submit" id="submitBtn" class="btn">Book Appointment</button>
-        </form>
-      </div>
+      <!-- Card 4 -->
+      <a href="appointment.html?specialist=Dentist" class="service-card s-amber">
+        <div class="service-icon si-amber"><i class="fa-solid fa-tooth"></i></div>
+        <h3 class="service-title">Dentist</h3>
+        <p class="service-desc">Complete dental health care — checkups, cleanings, and advanced dental procedures.</p>
+      </a>
+      
+      <!-- Card 5 -->
+      <a href="appointment.html?specialist=Orthopedic Surgeon" class="service-card s-green">
+        <div class="service-icon si-green"><i class="fa-solid fa-bone"></i></div>
+        <h3 class="service-title">Orthopedic Surgeon</h3>
+        <p class="service-desc">Surgeons and therapists for joint pain, sports injuries, fractures, and mobility issues.</p>
+      </a>
+      
+      <!-- Card 6 -->
+      <a href="appointment.html?specialist=General Physician" class="service-card s-blue">
+        <div class="service-icon si-blue"><i class="fa-solid fa-stethoscope"></i></div>
+        <h3 class="service-title">General Physician</h3>
+        <p class="service-desc">Experienced general physicians for common illnesses, prescriptions, and health advice.</p>
+      </a>
     </div>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // 1. Get specialist from URL parameter
-      const urlParams = new URLSearchParams(window.location.search);
-      const specialist = urlParams.get('specialist');
-      
-      const specialistDisplay = document.getElementById('specialistDisplay');
-      const specialistInput = document.getElementById('specialistInput');
-      
-      if (specialist) {
-        specialistDisplay.textContent = specialist;
-        specialistInput.value = specialist;
-      } else {
-        specialistDisplay.textContent = 'General Physician';
-        specialistInput.value = 'General Physician';
-      }
-
-      // Set minimum date to today
-      const dateInput = document.getElementById('date');
-      const today = new Date().toISOString().split('T')[0];
-      dateInput.min = today;
-    });
-
-    // 2. Handle form submission
-    document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const submitBtn = document.getElementById('submitBtn');
-      const statusMsg = document.getElementById('statusMessage');
-      
-      // Basic validation is handled by HTML 'required' attributes, 
-      // but we ensure fields aren't just whitespace
-      const patientName = document.getElementById('patientName').value.trim();
-      const age = document.getElementById('age').value;
-      const gender = document.getElementById('gender').value;
-      const specialist = document.getElementById('specialistInput').value;
-      const date = document.getElementById('date').value;
-      const time = document.getElementById('time').value;
-      const description = document.getElementById('description').value.trim();
-
-      if (!patientName || !description) {
-        statusMsg.textContent = 'Please fill out all required fields properly.';
-        statusMsg.className = 'message error';
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Booking...';
-      
-      try {
-        const response = await fetch('http://localhost:5000/api/appointments', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            patient_name: patientName,
-            age: age,
-            gender: gender,
-            specialist: specialist,
-            date: date,
-            time: time,
-            description: description
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          // Show success message
-          statusMsg.textContent = data.message || 'Appointment Booked Successfully';
-          statusMsg.className = 'message success';
-          document.getElementById('appointmentForm').reset();
-          
-          // Keep specialist value after reset
-          document.getElementById('specialistInput').value = specialist;
-        } else {
-          // Show error message from backend
-          statusMsg.textContent = data.message || 'Failed to book appointment.';
-          statusMsg.className = 'message error';
-        }
-      } catch (err) {
-        console.error('Submission error:', err);
-        statusMsg.textContent = 'Network error. Please try again later.';
-        statusMsg.className = 'message error';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Book Appointment';
-        
-        // Scroll to message
-        statusMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    });
-  </script>
 </body>
 </html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Appointments - Quick Med</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #1d6cf1;
+      --bg: #f8faff;
+      --surface: #ffffff;
+      --text: #0c1b33;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --radius: 12px;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .back-link {
+      display: inline-block;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      padding: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      font-size: 15px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #e8f0fe;
+      color: var(--primary);
+    }
+    
+    .status-badge.completed {
+      background: #d1fae5;
+      color: var(--success);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <a href="index.html" class="back-link">← Back to Home</a>
+    
+    <div class="header">
+      <h1>My Appointments</h1>
+      <a href="appointments.html" class="status-badge" style="text-decoration: none;">+ Book New</a>
+    </div>
+
+    <div class="card">
+      <div id="loading" class="loading">Loading your appointments...</div>
+      <table id="appointmentsTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>Specialist</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="appointmentsBody">
+          <!-- Data injected here via JS -->
+        </tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <p>You have no past appointments.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('quickmed_token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const table = document.getElementById('appointmentsTable');
+      const body = document.getElementById('appointmentsBody');
+      const loading = document.getElementById('loading');
+      const emptyState = document.getElementById('emptyState');
+      
+      try {
+        const response = await fetch('http://localhost:5000/api/appointments', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('quickmed_token')}`
+          }
+        });
+        const data = await response.json();
+        
+        loading.style.display = 'none';
+        
+        if (data && data.length > 0) {
+          table.style.display = 'table';
+          data.forEach(appt => {
+            const tr = document.createElement('tr');
+            
+            // Format status
+            let status = appt.STATUS || 'Upcoming';
+            let badgeClass = status.toLowerCase() === 'completed' ? 'completed' : '';
+            
+            tr.innerHTML = `
+              <td><strong>${appt.PATIENT_NAME || appt.patient_name}</strong></td>
+              <td>${appt.SPECIALIST || appt.specialist}</td>
+              <td>${appt.DATE || appt.date || appt.APPT_DATE || appt.appt_date}</td>
+              <td>${appt.TIME || appt.time || appt.TIME_SLOT || appt.time_slot}</td>
+              <td><span class="status-badge ${badgeClass}">${status}</span></td>
+            `;
+            body.appendChild(tr);
+          });
+        } else {
+          emptyState.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Error fetching appointments:', err);
+        loading.textContent = 'Failed to load appointments. Please try again.';
+      }
+    });
+  </script>
+</body>
+</html>

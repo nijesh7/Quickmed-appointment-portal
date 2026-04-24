@@ -733,9 +733,9 @@
 
       <!-- Header -->
       <div class="form-card-header">
-        <div class="greeting" id="greetingText">Sign in</div>
-        <h2 class="form-title" id="formTitle">Welcome back</h2>
-        <p class="form-sub" id="formSub">Enter your credentials to access your account</p>
+        <div class="greeting" id="greetingText">Register</div>
+        <h2 class="form-title" id="formTitle">Join QuickMed</h2>
+        <p class="form-sub" id="formSub">Start your health journey with us today</p>
       </div>
 
       <!-- Global alert -->
@@ -746,6 +746,32 @@
 
       <!-- Form -->
       <form id="loginForm">
+        <!-- Name -->
+        <div class="field" id="nameField">
+          <label for="nameInput">Full Name</label>
+          <div class="input-shell">
+            <i class="fa-solid fa-user icon-l" aria-hidden="true"></i>
+            <input type="text" id="nameInput" name="name" placeholder="Enter your full name" />
+          </div>
+          <div class="err-msg" id="nameErr" role="alert">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span id="nameErrTxt">Name is required.</span>
+          </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="field" id="phoneField">
+          <label for="phoneInput">Phone Number</label>
+          <div class="input-shell">
+            <i class="fa-solid fa-phone icon-l" aria-hidden="true"></i>
+            <input type="text" id="phoneInput" name="phone" placeholder="Enter your phone" />
+          </div>
+          <div class="err-msg" id="phoneErr" role="alert">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+            <span id="phoneErrTxt">Phone is required.</span>
+          </div>
+        </div>
+
         <!-- Email / Username -->
         <div class="field" id="emailField">
           <label for="emailInput">Email or Username</label>
@@ -798,7 +824,7 @@
         </div>
 
         <!-- Options -->
-        <div class="options-row" id="optionsRow">
+        <div class="options-row" id="optionsRow" style="visibility: hidden;">
           <label class="remember-label" for="rememberMe">
             <input type="checkbox" id="rememberMe" name="rememberMe" />
             <div class="check-box" aria-hidden="true">
@@ -806,13 +832,12 @@
             </div>
             <span class="lbl-text">Remember me</span>
           </label>
-          <a href="#" class="forgot-link" id="forgotLink" aria-label="Reset your password">Forgot password?</a>
         </div>
 
         <!-- Submit -->
-        <button type="submit" class="btn-submit" id="loginBtn" aria-label="Sign in to your account">
+        <button type="submit" class="btn-submit" id="loginBtn" aria-label="Create your account">
           <div class="spin-ring" id="spinner" aria-hidden="true"></div>
-          <span class="btn-label">Sign In</span>
+          <span class="btn-label">Create Account</span>
           <div class="btn-arrow" aria-hidden="true">
             <i class="fa-solid fa-arrow-right"></i>
           </div>
@@ -825,7 +850,7 @@
 
       <!-- Sign up note -->
       <div class="signup-note" id="toggleNote">
-        New to QuickMed? <a href="register.html" aria-label="Create a new account">Create an account</a>
+        Already have an account? <a href="login.html" aria-label="Sign in to your account">Sign In</a>
       </div>
 
       <!-- Trust badges -->
@@ -878,17 +903,20 @@
 
     $('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
-      console.log('Login submission started');
+      console.log('Form submission started');
       hideAlert();
 
       const email = $('emailInput').value.trim();
       const pw    = $('passwordInput').value;
+      const name  = $('nameInput').value.trim();
+      const phone = $('phoneInput').value.trim();
       
       let valid   = true;
 
       // Basic validation
       if (!email) { fieldError('emailField', 'emailErrTxt', 'Email is required.'); valid = false; }
       if (!pw || pw.length < 6) { fieldError('passwordField', 'passwordErrTxt', 'Password must be min 6 chars.'); valid = false; }
+      if (!name) { fieldError('nameField', 'nameErrTxt', 'Name is required.'); valid = false; }
 
       if (!valid) return;
 
@@ -896,10 +924,10 @@
       loginBtn.disabled = true;
 
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        const res = await fetch(`${API_BASE}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: pw })
+          body: JSON.stringify({ name, email, password: pw, phone })
         });
 
         const data = await res.json();
@@ -908,12 +936,10 @@
           throw new Error(data.message || 'Something went wrong');
         }
 
-        showAlert('Login successful! Redirecting...', 'success');
-        localStorage.setItem('quickmed_token', data.token);
-        localStorage.setItem('quickmed_user', JSON.stringify(data.user));
-        setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        showAlert('Registration successful! Redirecting to login...', 'success');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1500);
       } catch (err) {
-        console.error('Login error:', err);
+        console.error('Submission error:', err);
         showAlert('Network or Server Error: ' + err.message, 'error');
       } finally {
         loginBtn.classList.remove('loading');
