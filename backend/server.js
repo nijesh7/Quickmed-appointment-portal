@@ -52,7 +52,7 @@ app.post('/api/auth/register', async (req, res) => {
     conn = await db.getConnection();
     
     await conn.execute(
-      `INSERT INTO users (name, email, password, phone, role) VALUES (:name, :email, :p_password, :phone, 'patient')`,
+      `INSERT INTO qm_users (name, email, password, phone, role) VALUES (:name, :email, :p_password, :phone, 'patient')`,
       { name, email, p_password: hashedPassword, phone }
     );
     
@@ -77,7 +77,7 @@ app.post('/api/auth/login', async (req, res) => {
     conn = await db.getConnection();
     console.log(`  → Login attempt: ${email} (password length: ${password.length})`);
     const result = await conn.execute(
-      `SELECT * FROM users WHERE LOWER(email) = LOWER(:identifier) OR LOWER(name) = LOWER(:identifier)`,
+      `SELECT * FROM qm_users WHERE LOWER(email) = LOWER(:identifier) OR LOWER(name) = LOWER(:identifier)`,
       { identifier: email }
     );
 
@@ -121,7 +121,7 @@ app.get('/api/doctors', async (req, res) => {
   let conn;
   try {
     conn = await db.getConnection();
-    const result = await conn.execute(`SELECT * FROM doctors WHERE available = 1`);
+    const result = await conn.execute(`SELECT * FROM qm_doctors WHERE available = 1`);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -145,7 +145,7 @@ app.post('/api/appointments', authenticateToken, async (req, res) => {
     conn = await db.getConnection();
     
     await conn.execute(
-      `INSERT INTO appointments (patient_name, age, gender, specialist, "date", "time", description, user_email) 
+      `INSERT INTO qm_appointments (patient_name, age, gender, specialist, "date", "time", description, user_email) 
        VALUES (:patient_name, :age, :gender, :specialist, :p_date, :p_time, :description, :user_email)`,
       { patient_name, age, gender, specialist, p_date: date, p_time: time, description: description || '', user_email }
     );
@@ -165,7 +165,7 @@ app.get('/api/appointments', authenticateToken, async (req, res) => {
   try {
     conn = await db.getConnection();
     const result = await conn.execute(
-      `SELECT * FROM appointments WHERE user_email = :email ORDER BY id DESC`,
+      `SELECT * FROM qm_appointments WHERE user_email = :email ORDER BY id DESC`,
       { email: req.user.email }
     );
     res.json(result.rows);
@@ -183,7 +183,7 @@ app.get('/api/admin/users', async (req, res) => {
   let conn;
   try {
     conn = await db.getConnection();
-    const result = await conn.execute(`SELECT id, name, email, phone, role, created_at FROM users ORDER BY created_at DESC`);
+    const result = await conn.execute(`SELECT id, name, email, phone, role, created_at FROM qm_users ORDER BY created_at DESC`);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -199,7 +199,7 @@ app.get('/api/admin/appointments', async (req, res) => {
   try {
     conn = await db.getConnection();
     const result = await conn.execute(
-      `SELECT * FROM appointments ORDER BY id DESC`
+      `SELECT * FROM qm_appointments ORDER BY id DESC`
     );
     res.json(result.rows);
   } catch (err) {
