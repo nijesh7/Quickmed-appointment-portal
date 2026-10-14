@@ -1,19 +1,22 @@
 {
   "name": "quickmed-backend",
   "version": "1.0.0",
-  "description": "QuickMed Appointment System - Backend API (Node.js + Express + Oracle DB)",
+  "description": "QuickMed Appointment System - Backend API (Node.js + Express + Firebase Firestore)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "seed": "node seed.js"
+    "seed": "node seed-firebase.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
-    "jsonwebtoken": "^9.0.2",
+    "firebase-admin": "^12.7.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "optionalDependencies": {
     "oracledb": "^6.4.0"
   }
 }

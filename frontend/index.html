@@ -29,12 +29,31 @@
       --radius-lg:  24px;
       --radius-xl:  36px;
       --ease:       cubic-bezier(.4,0,.2,1);
+
+      /* Dark Mode Overrides */
+      --bg-body: var(--white);
+      --bg-surface: var(--surface);
+      --text-main: var(--ink);
+      --text-muted: var(--ink-3);
+      --border-color: var(--line);
+    }
+
+    body.dark-mode {
+      --bg-body: #0a0f1a;
+      --bg-surface: #111827;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255,255,255,0.1);
+      --white: #111827;
+      --line: rgba(255,255,255,0.1);
+      --blue-light: rgba(29,108,241,0.15);
+      --surface: #0f172a;
     }
 
     /* ===== RESET ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--white); color: var(--ink); overflow-x: hidden; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg-body); color: var(--text-main); overflow-x: hidden; transition: background 0.3s, color 0.3s; }
     img { display: block; max-width: 100%; }
     a { text-decoration: none; color: inherit; }
     ul { list-style: none; }
@@ -102,6 +121,11 @@
     .nav-links a { font-size: 14.5px; font-weight: 500; color: var(--ink-2); transition: color .2s; }
     .nav-links a:hover, .nav-links a.active { color: var(--blue); }
     .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .theme-toggle {
+      background: none; border: none; cursor: pointer; color: var(--text-main); font-size: 18px;
+      padding: 8px; border-radius: 10px; transition: background 0.2s;
+    }
+    .theme-toggle:hover { background: var(--blue-light); color: var(--blue); }
     .nav-ham { display: none; background: none; border: none; cursor: pointer; color: var(--ink); font-size: 22px; }
     .mobile-nav {
       display: none; position: fixed; inset: 0; z-index: 99;
@@ -431,6 +455,39 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: rgba(29,108,241,.3); border-radius: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
+
+    /* ===== FEE BADGE ===== */
+    .doctor-fee {
+      margin-top: 10px; font-size: 13px; font-weight: 700;
+      color: var(--green); display: flex; align-items: center; gap: 5px;
+    }
+    .doctor-fee span { font-size: 11px; color: var(--ink-4); font-weight: 500; }
+
+    /* ===== FILTER TABS ===== */
+    .filter-tabs {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .filter-tab {
+      padding: 8px 18px; border-radius: 50px; border: 1.5px solid var(--line);
+      background: var(--white); color: var(--ink-3); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .2s var(--ease); font-family: inherit;
+    }
+    .filter-tab:hover { border-color: var(--blue); color: var(--blue); }
+    .filter-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+    /* ===== BACK TO TOP ===== */
+    .back-to-top {
+      position: fixed; bottom: 32px; right: 32px; z-index: 200;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--blue); color: white; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      box-shadow: 0 6px 20px rgba(29,108,241,.4);
+      opacity: 0; transform: translateY(20px);
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+    }
+    .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .back-to-top:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(29,108,241,.5); }
   </style>
 </head>
 <body>
@@ -450,6 +507,7 @@
       <li><a href="my-appointments.html">My Appointments</a></li>
     </ul>
     <div class="nav-actions" id="navActions">
+      <button id="themeToggle" class="theme-toggle" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
       <a href="login.html" class="btn btn-outline" style="padding:10px 20px;font-size:14px;">Sign In</a>
       <a href="appointments.html" class="btn btn-primary" style="padding:10px 20px;font-size:14px;">Book Now</a>
     </div>
@@ -695,6 +753,24 @@
       </div>
       <a href="appointments.html" class="btn btn-outline">View All Doctors <i class="fa-solid fa-arrow-right"></i></a>
     </div>
+
+    <!-- Search + Filter Section -->
+    <div style="margin-bottom: 24px; max-width: 500px;">
+      <div style="position: relative;">
+        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-4);"></i>
+        <input type="text" id="doctorSearch" placeholder="Search for Dr. Vikram, Dr. Sneha, or Cardiology..." 
+          style="width: 100%; padding: 14px 14px 14px 46px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font-family: inherit; font-size: 15px; outline: none; transition: border-color 0.2s;">
+      </div>
+    </div>
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-spec="All" onclick="filterBySpec(this)">All Doctors</button>
+      <button class="filter-tab" data-spec="Cardiologist" onclick="filterBySpec(this)">❤️ Cardiology</button>
+      <button class="filter-tab" data-spec="Neurologist" onclick="filterBySpec(this)">🧠 Neurology</button>
+      <button class="filter-tab" data-spec="General Physician" onclick="filterBySpec(this)">🩺 General</button>
+      <button class="filter-tab" data-spec="Pediatrician" onclick="filterBySpec(this)">👶 Pediatrics</button>
+      <button class="filter-tab" data-spec="Orthopedic Surgeon" onclick="filterBySpec(this)">🦴 Orthopedics</button>
+    </div>
+
     <div class="doctors-grid" id="doctorsGrid">
       <!-- Dynamic doctors will be loaded here -->
     </div>
@@ -831,6 +907,7 @@
   </div>
 </footer>
 
+<script type="module" src="firebase-config.js"></script>
 <script>
   /* ── NAV scroll ── */
   const nav = document.getElementById('mainNav');
@@ -879,56 +956,117 @@
 
   /* ── API Integration ── */
   const API_URL = 'http://localhost:5000/api';
+  let allDoctors = [];
+
+  /* ── Dark Mode ── */
+  const themeToggle = document.getElementById('themeToggle');
+  const body = document.body;
+
+  // Load saved theme
+  if (localStorage.getItem('quickmed_theme') === 'dark') {
+    body.classList.add('dark-mode');
+    themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+  }
+
+  themeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    localStorage.setItem('quickmed_theme', isDark ? 'dark' : 'light');
+    themeToggle.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+  });
+
+  /* ── Search Filtering ── */
+  const searchInput = document.getElementById('doctorSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = allDoctors.filter(d => 
+        d.NAME.toLowerCase().includes(term) || 
+        d.SPECIALIZATION.toLowerCase().includes(term)
+      );
+      renderDoctors(filtered);
+    });
+  }
 
   async function loadDoctors() {
-    const grid = document.getElementById('doctorsGrid');
     try {
-      const res = await fetch(`${API_URL}/doctors`);
-      const doctors = await res.json();
-      
-      if (doctors.length === 0) {
-        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--ink-3);">No doctors available at the moment.</p>';
-        return;
+      if (window.QuickMedFirebase) {
+        try {
+          allDoctors = await window.QuickMedFirebase.getDoctors();
+          if (allDoctors && allDoctors.length > 0) {
+            renderDoctors(allDoctors);
+            return;
+          }
+        } catch (fbErr) {
+          console.warn('Firebase direct load fallback to backend:', fbErr);
+        }
       }
-
-      grid.innerHTML = doctors.map((doc, idx) => `
-        <div class="doctor-card fade-up visible" style="transition-delay: ${idx * 0.1}s">
-          <div class="doctor-img-placeholder">
-            <div class="doctor-img-inner" style="background: ${doc.BG_COLOR || '#dbeafe'}">${doc.EMOJI || '👨‍⚕️'}</div>
-          </div>
-          <div class="doctor-body">
-            <div class="doctor-name">${doc.NAME}</div>
-            <div class="doctor-spec">${doc.SPECIALIZATION}</div>
-            <div class="doctor-rating">
-              <div class="stars">★★★★★</div>
-              <span class="score">4.9</span>
-              <span class="count">(${Math.floor(Math.random() * 200) + 50} reviews)</span>
-            </div>
-            <div class="doctor-tags">
-              <span class="doctor-tag">${doc.SPECIALIZATION.split(' ')[0]}</span>
-              <span class="doctor-tag">Verified</span>
-            </div>
-            <div class="doctor-avail"><span class="dot"></span>Available Today</div>
-            <a href="appointments.html?doctor=${doc.ID}" class="doctor-btn">Book Appointment</a>
-          </div>
-        </div>
-      `).join('');
+      const res = await fetch(`${API_URL}/doctors`);
+      allDoctors = await res.json();
+      renderDoctors(allDoctors);
     } catch (err) {
       console.error('Failed to fetch doctors:', err);
-      grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--red);">Failed to load doctors. Please check if backend is running.</p>';
+      const grid = document.getElementById('doctorsGrid');
+      if (grid) grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--red);">Failed to load doctors. Please check if backend or Firebase is connected.</p>';
     }
+  }
+
+  function renderDoctors(doctors) {
+    const grid = document.getElementById('doctorsGrid');
+    if (!grid) return;
+    
+    if (doctors.length === 0) {
+      grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--ink-3);">No doctors found matching your search.</p>';
+      return;
+    }
+
+    grid.innerHTML = doctors.map((doc, idx) => `
+      <div class="doctor-card visible" style="transition-delay: ${idx * 0.05}s">
+        <div class="doctor-img-placeholder">
+          <div class="doctor-img-inner" style="background: ${doc.BG_COLOR || '#dbeafe'}">${doc.EMOJI || '👨‍⚕️'}</div>
+        </div>
+        <div class="doctor-body">
+          <div class="doctor-name">${doc.NAME}</div>
+          <div class="doctor-spec">${doc.SPECIALIZATION}</div>
+          <div class="doctor-rating">
+            <div class="stars">★★★★★</div>
+            <span class="score">4.9</span>
+            <span class="count">(${Math.floor(Math.random() * 200) + 50} reviews)</span>
+          </div>
+          <div class="doctor-tags">
+            <span class="doctor-tag">${doc.SPECIALIZATION.split(' ')[0]}</span>
+            <span class="doctor-tag">Verified</span>
+          </div>
+          ${doc.FEE ? `<div class="doctor-fee">₹${doc.FEE} <span>consultation fee</span></div>` : ''}
+          <div class="doctor-avail"><span class="dot"></span>Available Today</div>
+          <a href="appointment.html?specialist=${doc.SPECIALIZATION}" class="doctor-btn">Book Appointment</a>
+        </div>
+      </div>
+    `).join('');
   }
 
   function updateNav() {
     const user = JSON.parse(localStorage.getItem('quickmed_user'));
     const navActions = document.getElementById('navActions');
     
-    if (user) {
+    if (user && navActions) {
       navActions.innerHTML = `
+        <button id="themeToggle" class="theme-toggle" title="Toggle Dark Mode"><i class="fa-solid fa-moon"></i></button>
         <span style="font-weight: 600; color: var(--ink);">Hi, ${user.name.split(' ')[0]}</span>
         ${user.role === 'admin' ? '<a href="admin.html" class="btn btn-outline" style="padding:10px 20px;font-size:14px;">Admin</a>' : ''}
         <button onclick="logout()" class="btn btn-primary" style="padding:10px 20px;font-size:14px;">Logout</button>
       `;
+      // Re-attach dark mode listener after innerHTML update
+      const newToggle = document.getElementById('themeToggle');
+      if (newToggle) {
+        newToggle.innerHTML = body.classList.contains('dark-mode') ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        newToggle.addEventListener('click', () => {
+          body.classList.toggle('dark-mode');
+          const isDark = body.classList.contains('dark-mode');
+          localStorage.setItem('quickmed_theme', isDark ? 'dark' : 'light');
+          newToggle.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        });
+      }
     }
   }
 
@@ -942,6 +1080,49 @@
     loadDoctors();
     updateNav();
   });
+
+  /* ── Filter by Specialization ── */
+  let activeSpec = 'All';
+  function filterBySpec(btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    activeSpec = btn.getAttribute('data-spec');
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const term = (document.getElementById('doctorSearch')?.value || '').toLowerCase();
+    let filtered = allDoctors;
+    if (activeSpec !== 'All') {
+      filtered = filtered.filter(d => d.SPECIALIZATION === activeSpec);
+    }
+    if (term) {
+      filtered = filtered.filter(d =>
+        d.NAME.toLowerCase().includes(term) ||
+        d.SPECIALIZATION.toLowerCase().includes(term)
+      );
+    }
+    renderDoctors(filtered);
+  }
+
+  // Override search to use combined filter
+  document.addEventListener('DOMContentLoaded', () => {
+    const si = document.getElementById('doctorSearch');
+    if (si) si.addEventListener('input', applyFilters);
+  });
+
+  /* ── Back to Top ── */
+  const backToTopBtn = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    if (backToTopBtn) backToTopBtn.classList.toggle('visible', window.scrollY > 400);
+  });
+  function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 </script>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" onclick="scrollToTop()" title="Back to top">
+  <i class="fa-solid fa-arrow-up"></i>
+</button>
+
 </body>
 </html>

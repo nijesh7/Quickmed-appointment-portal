@@ -864,6 +864,7 @@
   </main>
 
   <!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+  <script type="module" src="firebase-config.js"></script>
   <script>
     /* ── helpers ───────────────────────────────────── */
     const $ = id => document.getElementById(id);
@@ -924,23 +925,40 @@
       loginBtn.disabled = true;
 
       try {
-        const res = await fetch(`${API_BASE}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password: pw, phone })
-        });
+        let registered = false;
 
-        const data = await res.json();
+        // 1. Try Direct Firebase Registration
+        if (window.QuickMedFirebase) {
+          try {
+            await window.QuickMedFirebase.registerUser({ name, email, password: pw, phone });
+            registered = true;
+          } catch (fbErr) {
+            console.warn('Firebase direct register error fallback to API:', fbErr.message);
+            if (fbErr.message.includes('already')) {
+              throw fbErr;
+            }
+          }
+        }
 
-        if (!res.ok) {
-          throw new Error(data.message || 'Something went wrong');
+        // 2. Fallback to Backend API
+        if (!registered) {
+          const res = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password: pw, phone })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.message || 'Something went wrong');
+          }
         }
 
         showAlert('Registration successful! Redirecting to login...', 'success');
         setTimeout(() => { window.location.href = 'login.html'; }, 1500);
       } catch (err) {
         console.error('Submission error:', err);
-        showAlert('Network or Server Error: ' + err.message, 'error');
+        showAlert(err.message || 'Network or Server Error', 'error');
       } finally {
         loginBtn.classList.remove('loading');
         loginBtn.disabled = false;

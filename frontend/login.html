@@ -839,6 +839,7 @@
   </main>
 
   <!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+  <script type="module" src="firebase-config.js"></script>
   <script>
     /* ── helpers ───────────────────────────────────── */
     const $ = id => document.getElementById(id);
@@ -896,25 +897,45 @@
       loginBtn.disabled = true;
 
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: pw })
-        });
+        let loggedInUser = null;
+        let token = null;
 
-        const data = await res.json();
+        // 1. Try Direct Firebase Auth / Firestore Login
+        if (window.QuickMedFirebase) {
+          try {
+            const fbResult = await window.QuickMedFirebase.loginUser({ email, password: pw });
+            if (fbResult) {
+              loggedInUser = fbResult;
+              token = fbResult.token;
+            }
+          } catch (fbErr) {
+            console.warn('Firebase login attempt fallback to API:', fbErr.message);
+          }
+        }
 
-        if (!res.ok) {
-          throw new Error(data.message || 'Something went wrong');
+        // 2. Fallback to Backend API
+        if (!loggedInUser) {
+          const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pw })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.message || 'Something went wrong');
+          }
+          loggedInUser = data.user;
+          token = data.token;
         }
 
         showAlert('Login successful! Redirecting...', 'success');
-        localStorage.setItem('quickmed_token', data.token);
-        localStorage.setItem('quickmed_user', JSON.stringify(data.user));
+        localStorage.setItem('quickmed_token', token);
+        localStorage.setItem('quickmed_user', JSON.stringify(loggedInUser));
         setTimeout(() => { window.location.href = 'index.html'; }, 1000);
       } catch (err) {
         console.error('Login error:', err);
-        showAlert('Network or Server Error: ' + err.message, 'error');
+        showAlert(err.message || 'Network or Server Error', 'error');
       } finally {
         loginBtn.classList.remove('loading');
         loginBtn.disabled = false;

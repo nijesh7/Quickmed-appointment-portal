@@ -72,8 +72,65 @@
     .service-title { font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 10px; position: relative; z-index: 1; }
     .service-desc { font-size: 14.5px; color: var(--ink-3); line-height: 1.65; position: relative; z-index: 1; }
     
-    @media (max-width: 900px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 560px) { .services-grid { grid-template-columns: 1fr; } }
+    .back-link:hover { text-decoration: underline; }
+    
+    .filter-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .search-input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-3);
+    }
+
+    .search-input-wrapper input {
+      width: 100%;
+      padding: 12px 12px 12px 40px;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      outline: none;
+      font-family: inherit;
+    }
+
+    .category-filters {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .category-btn {
+      padding: 8px 16px;
+      border-radius: 50px;
+      background: var(--white);
+      border: 1.5px solid var(--line);
+      color: var(--ink-3);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .category-btn.active {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+    }
   </style>
 </head>
 <body>
@@ -85,49 +142,100 @@
       <p>Choose the right specialist for your health needs to book an appointment.</p>
     </div>
 
+    <div class="filter-section">
+      <div class="category-filters" id="categoryFilters">
+        <button class="category-btn active" data-cat="all">All</button>
+        <button class="category-btn" data-cat="major">Major Surgery</button>
+        <button class="category-btn" data-cat="routine">Routine Checkup</button>
+        <button class="category-btn" data-cat="dental">Dental</button>
+      </div>
+      <div class="search-input-wrapper">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="specialistSearch" placeholder="Search for specialists (e.g. Dr. Rajesh)...">
+      </div>
+    </div>
+
     <div class="services-grid">
       <!-- Card 1 -->
-      <a href="appointment.html?specialist=Cardiologist" class="service-card s-teal">
+      <a href="appointment.html?specialist=Cardiologist" class="service-card s-teal" data-category="major">
         <div class="service-icon si-teal"><i class="fa-solid fa-heart-pulse"></i></div>
         <h3 class="service-title">Cardiologist</h3>
         <p class="service-desc">Expert heart specialists for diagnosis, monitoring, and treatment of cardiovascular conditions.</p>
       </a>
 
       <!-- Card 2 -->
-      <a href="appointment.html?specialist=Neurologist" class="service-card s-purple">
+      <a href="appointment.html?specialist=Neurologist" class="service-card s-purple" data-category="major">
         <div class="service-icon si-purple"><i class="fa-solid fa-brain"></i></div>
         <h3 class="service-title">Neurologist</h3>
         <p class="service-desc">World-class neurologists handling headaches, epilepsy, stroke, and cognitive health.</p>
       </a>
 
       <!-- Card 3 -->
-      <a href="appointment.html?specialist=Gynecologist" class="service-card s-red">
+      <a href="appointment.html?specialist=Gynecologist" class="service-card s-red" data-category="routine">
         <div class="service-icon si-red"><i class="fa-solid fa-person-pregnant"></i></div>
         <h3 class="service-title">Gynecologist</h3>
         <p class="service-desc">Comprehensive care for women's reproductive health, prenatal care, and related conditions.</p>
       </a>
 
       <!-- Card 4 -->
-      <a href="appointment.html?specialist=Dentist" class="service-card s-amber">
+      <a href="appointment.html?specialist=Dentist" class="service-card s-amber" data-category="dental">
         <div class="service-icon si-amber"><i class="fa-solid fa-tooth"></i></div>
         <h3 class="service-title">Dentist</h3>
         <p class="service-desc">Complete dental health care — checkups, cleanings, and advanced dental procedures.</p>
       </a>
       
       <!-- Card 5 -->
-      <a href="appointment.html?specialist=Orthopedic Surgeon" class="service-card s-green">
+      <a href="appointment.html?specialist=Orthopedic Surgeon" class="service-card s-green" data-category="major">
         <div class="service-icon si-green"><i class="fa-solid fa-bone"></i></div>
         <h3 class="service-title">Orthopedic Surgeon</h3>
         <p class="service-desc">Surgeons and therapists for joint pain, sports injuries, fractures, and mobility issues.</p>
       </a>
       
       <!-- Card 6 -->
-      <a href="appointment.html?specialist=General Physician" class="service-card s-blue">
+      <a href="appointment.html?specialist=General Physician" class="service-card s-blue" data-category="routine">
         <div class="service-icon si-blue"><i class="fa-solid fa-stethoscope"></i></div>
         <h3 class="service-title">General Physician</h3>
         <p class="service-desc">Experienced general physicians for common illnesses, prescriptions, and health advice.</p>
       </a>
     </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('specialistSearch');
+      const filterBtns = document.querySelectorAll('.category-btn');
+      const cards = document.querySelectorAll('.service-card');
+
+      function filterCards() {
+        const term = searchInput.value.toLowerCase();
+        const activeCat = document.querySelector('.category-btn.active').dataset.cat;
+
+        cards.forEach(card => {
+          const title = card.querySelector('.service-title').textContent.toLowerCase();
+          const desc = card.querySelector('.service-desc').textContent.toLowerCase();
+          const cardCat = card.dataset.category;
+          
+          const matchesSearch = title.includes(term) || desc.includes(term);
+          const matchesCat = activeCat === 'all' || cardCat === activeCat;
+
+          if (matchesSearch && matchesCat) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      searchInput.addEventListener('input', filterCards);
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          filterCards();
+        });
+      });
+    });
+  </script>
 </body>
 </html>

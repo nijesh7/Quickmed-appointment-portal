@@ -183,9 +183,51 @@
     .back-link:hover {
       text-decoration: underline;
     }
+
+    /* Toast Styles */
+    #toastContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background: white;
+      color: var(--text);
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border-left: 4px solid var(--primary);
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--error); }
+
+    .char-count {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
+
+  <div id="toastContainer"></div>
 
   <div>
     <a href="index.html" class="back-link">← Back to Home</a>
@@ -245,7 +287,8 @@
 
           <div class="form-group">
             <label for="description">Problem / Description</label>
-            <textarea id="description" placeholder="Briefly describe your symptoms or reason for the visit" required></textarea>
+            <textarea id="description" maxlength="500" placeholder="Briefly describe your symptoms or reason for the visit" required></textarea>
+            <span class="char-count" id="charCount">0 / 500 characters</span>
           </div>
 
           <button type="submit" id="submitBtn" class="btn">Book Appointment</button>
@@ -254,6 +297,7 @@
     </div>
   </div>
 
+  <script type="module" src="firebase-config.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const token = localStorage.getItem('quickmed_token');
@@ -281,7 +325,34 @@
       const dateInput = document.getElementById('date');
       const today = new Date().toISOString().split('T')[0];
       dateInput.min = today;
+
+      // Character count logic
+      const descArea = document.getElementById('description');
+      const charCount = document.getElementById('charCount');
+      descArea.addEventListener('input', () => {
+        charCount.textContent = `${descArea.value.length} / 500 characters`;
+      });
     });
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+      
+      container.appendChild(toast);
+      
+      // Animate in
+      setTimeout(() => toast.classList.add('show'), 10);
+      
+      // Remove after 4s
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
 
     // 2. Handle form submission
     document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
@@ -311,48 +382,65 @@
       submitBtn.textContent = 'Booking...';
       
       try {
-        const response = await fetch('http://localhost:5000/api/appointments', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('quickmed_token')}`
-          },
-          body: JSON.stringify({
-            patient_name: patientName,
-            age: age,
-            gender: gender,
-            specialist: specialist,
-            date: date,
-            time: time,
-            description: description
-          })
-        });
+        let booked = false;
 
-        const data = await response.json();
-
-        if (response.ok) {
-          // Show success message
-          statusMsg.textContent = data.message || 'Appointment Booked Successfully';
-          statusMsg.className = 'message success';
-          document.getElementById('appointmentForm').reset();
-          
-          // Keep specialist value after reset
-          document.getElementById('specialistInput').value = specialist;
-        } else {
-          // Show error message from backend
-          statusMsg.textContent = data.message || 'Failed to book appointment.';
-          statusMsg.className = 'message error';
+        // 1. Try Direct Firebase Firestore
+        if (window.QuickMedFirebase) {
+          try {
+            const user = JSON.parse(localStorage.getItem('quickmed_user') || '{}');
+            await window.QuickMedFirebase.bookAppointment({
+              patient_name: patientName,
+              age: Number(age),
+              gender: gender,
+              specialist: specialist,
+              date: date,
+              time: time,
+              description: description,
+              user_email: user.email || ''
+            });
+            booked = true;
+          } catch (fbErr) {
+            console.warn('Firebase direct booking fallback to API:', fbErr);
+          }
         }
+
+        // 2. Fallback to Backend API
+        if (!booked) {
+          const response = await fetch('http://localhost:5000/api/appointments', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('quickmed_token')}`
+            },
+            body: JSON.stringify({
+              patient_name: patientName,
+              age: age,
+              gender: gender,
+              specialist: specialist,
+              date: date,
+              time: time,
+              description: description
+            })
+          });
+
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Failed to book appointment.');
+          }
+        }
+
+        showToast('Appointment Booked Successfully', 'success');
+        document.getElementById('appointmentForm').reset();
+        document.getElementById('charCount').textContent = '0 / 500 characters';
+        
+        // Keep specialist value after reset
+        document.getElementById('specialistInput').value = specialist;
       } catch (err) {
         console.error('Submission error:', err);
-        statusMsg.textContent = 'Network error. Please try again later.';
-        statusMsg.className = 'message error';
+        showToast(err.message || 'Network error. Please try again later.', 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Book Appointment';
-        
-        // Scroll to message
-        statusMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     });
   </script>

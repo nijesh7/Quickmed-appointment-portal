@@ -116,6 +116,54 @@
       color: var(--text-light);
       font-style: italic;
     }
+    
+    .actions-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 20px;
+    }
+    
+    .search-box {
+      position: relative;
+      flex: 1;
+    }
+    
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 10px 10px 10px 35px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      outline: none;
+    }
+    
+    .btn-print {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-print:hover { background: #f1f5f9; }
+
+    @media print {
+      .back-link, .header, .actions-bar { display: none !important; }
+      body { padding: 0; }
+      .card { box-shadow: none; border: none; }
+    }
   </style>
 </head>
 <body>
@@ -129,6 +177,13 @@
     </div>
 
     <div class="card">
+      <div class="actions-bar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="apptSearch" placeholder="Search appointments...">
+        </div>
+        <button onclick="window.print()" class="btn-print"><i class="fa-solid fa-print"></i> Print</button>
+      </div>
       <div id="loading" class="loading">Loading your appointments...</div>
       <table id="appointmentsTable" style="display: none;">
         <thead>
@@ -150,7 +205,10 @@
     </div>
   </div>
 
+  <script type="module" src="firebase-config.js"></script>
   <script>
+    let allAppts = [];
+
     document.addEventListener('DOMContentLoaded', async () => {
       const token = localStorage.getItem('quickmed_token');
       if (!token) {
@@ -164,40 +222,78 @@
       const emptyState = document.getElementById('emptyState');
       
       try {
-        const response = await fetch('http://localhost:5000/api/appointments', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('quickmed_token')}`
+        let loaded = false;
+
+        // 1. Try Direct Firebase Firestore
+        if (window.QuickMedFirebase) {
+          try {
+            const user = JSON.parse(localStorage.getItem('quickmed_user') || '{}');
+            if (user.email) {
+              allAppts = await window.QuickMedFirebase.getUserAppointments(user.email);
+              loaded = true;
+            }
+          } catch (fbErr) {
+            console.warn('Firebase appointments fetch fallback to API:', fbErr);
           }
-        });
-        const data = await response.json();
+        }
+
+        // 2. Fallback to Backend API
+        if (!loaded) {
+          const response = await fetch('http://localhost:5000/api/appointments', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('quickmed_token')}`
+            }
+          });
+          allAppts = await response.json();
+        }
         
         loading.style.display = 'none';
+        renderAppointments(allAppts);
         
-        if (data && data.length > 0) {
-          table.style.display = 'table';
-          data.forEach(appt => {
-            const tr = document.createElement('tr');
-            
-            // Format status
-            let status = appt.STATUS || 'Upcoming';
-            let badgeClass = status.toLowerCase() === 'completed' ? 'completed' : '';
-            
-            tr.innerHTML = `
-              <td><strong>${appt.PATIENT_NAME || appt.patient_name}</strong></td>
-              <td>${appt.SPECIALIST || appt.specialist}</td>
-              <td>${appt.DATE || appt.date || appt.APPT_DATE || appt.appt_date}</td>
-              <td>${appt.TIME || appt.time || appt.TIME_SLOT || appt.time_slot}</td>
-              <td><span class="status-badge ${badgeClass}">${status}</span></td>
-            `;
-            body.appendChild(tr);
-          });
-        } else {
-          emptyState.style.display = 'block';
-        }
       } catch (err) {
-        console.error('Error fetching appointments:', err);
-        loading.textContent = 'Failed to load appointments. Please try again.';
+        console.error('Failed to load appointments:', err);
+        loading.style.display = 'none';
+        renderAppointments([]);
       }
+    });
+
+    function renderAppointments(data) {
+      const table = document.getElementById('appointmentsTable');
+      const body = document.getElementById('appointmentsBody');
+      const emptyState = document.getElementById('emptyState');
+      
+      body.innerHTML = '';
+      
+      if (data && data.length > 0) {
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+        data.forEach(appt => {
+          const tr = document.createElement('tr');
+          let status = appt.STATUS || 'Upcoming';
+          let badgeClass = status.toLowerCase() === 'completed' ? 'completed' : '';
+          
+          tr.innerHTML = `
+            <td><strong>${appt.PATIENT_NAME || appt.patient_name}</strong></td>
+            <td>${appt.SPECIALIST || appt.specialist}</td>
+            <td>${appt.DATE || appt.date || appt.APPT_DATE || appt.appt_date}</td>
+            <td>${appt.TIME || appt.time || appt.TIME_SLOT || appt.time_slot}</td>
+            <td><span class="status-badge ${badgeClass}">${status}</span></td>
+          `;
+          body.appendChild(tr);
+        });
+      } else {
+        table.style.display = 'none';
+        emptyState.style.display = 'block';
+      }
+    }
+
+    document.getElementById('apptSearch').addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = allAppts.filter(a => 
+        (a.PATIENT_NAME || a.patient_name || '').toLowerCase().includes(term) ||
+        (a.SPECIALIST || a.specialist || '').toLowerCase().includes(term)
+      );
+      renderAppointments(filtered);
     });
   </script>
 </body>
